@@ -1,113 +1,209 @@
-# Sanora Health: Healthcare Management System
+# Sanora Health – Healthcare Management System
 
-A full-stack, role-based healthcare management web application. Patients can book appointments and access their medical records, while administrators manage doctors, approvals, patients and records.
+A full-stack healthcare management application designed to manage patients, doctors, appointments, and medical records through secure, role-based access.
+
+The application provides separate **Patient** and **Admin** portals with JWT-based authentication and a RESTful Spring Boot backend connected to a React frontend.
+
+## Live Application
+
+**Live URL:** https://healthcare-frontend-q9t8.onrender.com
 
 ## Features
 
-**Patient portal**
-- Register, sign in and manage a personal profile
-- Browse doctors, search by name or specialization, and book appointments
-- Track appointment status (Pending, Approved, Completed, Rejected, Cancelled) and cancel when needed
-- View medical records and download attached reports securely
+### Patient Portal
 
-**Admin portal**
-- Separate admin login with a live dashboard (pending approvals, doctors, patients, records)
-- Approve, reject or complete appointments with notes to the patient
-- Add, edit, activate and deactivate doctors
-- Block and unblock patient accounts
-- Add medical records with file upload (PDF, PNG, JPG)
+* Register and securely log in
+* Manage personal profile
+* Browse and search doctors by name or specialization
+* Book and cancel appointments
+* Track appointment status
+* View medical records
+* Download medical reports securely
 
-## Tech stack
+### Admin Portal
 
-| Layer | Technology |
-|---|---|
-| Backend | Java 17, Spring Boot 4, Spring Security, Spring Data JPA (Hibernate), Bean Validation |
-| Authentication | JWT (jjwt), BCrypt password hashing, role-based access (PATIENT, ADMIN) |
-| Database | MySQL 8 |
-| Frontend | React (Vite), React Router, Axios, Bootstrap 5 grid with a custom design system |
-| Tools | Maven, Postman, VS Code |
+* Secure admin login and dashboard
+* View patients, doctors, appointments, and medical records
+* Approve, reject, and complete appointments with notes
+* Add, update, activate, and deactivate doctors
+* Block and unblock patient accounts
+* Add medical records with file attachments
+
+## Technology Stack
+
+| Layer            | Technologies                                |
+| ---------------- | ------------------------------------------- |
+| Backend          | Java 17, Spring Boot, Spring Security       |
+| Persistence      | Spring Data JPA, Hibernate                  |
+| Authentication   | JWT, BCrypt                                 |
+| Database         | MySQL                                       |
+| Frontend         | React, Vite, React Router, Axios, Bootstrap |
+| Build Tool       | Maven                                       |
+| Version Control  | Git, GitHub                                 |
+| Containerization | Docker                                      |
 
 ## Architecture
 
-Monolithic Spring Boot application with a layered design, exposing a REST API to a separate React single-page app.
+The application follows a layered backend architecture with a separate React frontend.
 
-```
-React (Vite)  --JSON over HTTP + JWT-->  Controller -> Service -> Repository -> MySQL
+```text
+React Frontend
+      |
+      | REST API + JWT
+      v
+Spring Boot Backend
+      |
+      v
+Controller → Service → Repository
+      |
+      v
+     MySQL
 ```
 
-Backend packages: `controller`, `service`, `repository`, `entity`, `dto`, `security`, `config`, `exception`.
+### Backend Structure
+
+The backend is organized into separate layers for maintainability:
+
+```text
+controller
+service
+repository
+entity
+dto
+security
+config
+exception
+```
+
+## Security
+
+Security is implemented using Spring Security and JWT authentication.
+
+Key security features include:
+
+* Stateless JWT-based authentication
+* BCrypt password hashing
+* Role-based authorization for `PATIENT` and `ADMIN`
+* Protected admin and patient API endpoints
+* Patient ownership checks for personal data
+* Blocked users prevented from accessing the application
+* Request validation and centralized exception handling
+* Secure file upload with file type and size restrictions
+* Randomized file names and path validation
 
 ## Database
 
-Four tables: `users`, `doctors`, `appointments` and `medical_records`. Appointments link a patient and a doctor (foreign keys), and each medical record links to one appointment.
+The application uses MySQL with Spring Data JPA and Hibernate.
 
-## Security highlights
+The main entities are:
 
-- Passwords stored with BCrypt, never in plain text
-- Stateless JWT authentication with a custom filter
-- Role-based URL rules: `/api/admin/**` for admins, `/api/patient/**` for patients
-- Ownership checks (a patient can only read or cancel their own data)
-- Blocked users are rejected immediately, even with an old token
-- Input validation with clean JSON error responses (400, 401, 403, 404)
-- Safe file upload: type and size limits, random stored file names, path checks
+* Users
+* Doctors
+* Appointments
+* Medical Records
 
-## REST API (21 endpoints)
+Appointments maintain relationships between patients and doctors, while medical records are associated with appointments.
 
-| # | Method | Endpoint | Access |
-|---|---|---|---|
-| 1 | POST | /api/auth/register | Public |
-| 2 | POST | /api/auth/login | Public |
-| 3 | GET | /api/patient/profile | Patient |
-| 4 | PUT | /api/patient/profile | Patient |
-| 5 | POST | /api/patient/appointments | Patient |
-| 6 | GET | /api/patient/appointments | Patient |
-| 7 | PUT | /api/patient/appointments/{id}/cancel | Patient |
-| 8 | GET | /api/patient/records | Patient |
-| 9 | GET | /api/patient/records/{id}/download | Patient |
-| 10 | GET | /api/doctors (optional ?specialization=) | Logged in |
-| 11 | GET | /api/doctors/{id} | Logged in |
-| 12 | POST | /api/admin/doctors | Admin |
-| 13 | PUT | /api/admin/doctors/{id} | Admin |
-| 14 | PUT | /api/admin/doctors/{id}/status | Admin |
-| 15 | GET | /api/admin/doctors | Admin |
-| 16 | GET | /api/admin/appointments (optional ?status=) | Admin |
-| 17 | PUT | /api/admin/appointments/{id}/status | Admin |
-| 18 | GET | /api/admin/records (optional ?patientId=) | Admin |
-| 19 | POST | /api/admin/records (multipart/form-data) | Admin |
-| 20 | GET | /api/admin/users | Admin |
-| 21 | PUT | /api/admin/users/{id}/status | Admin |
+## REST API
 
-## Getting started
+The backend exposes RESTful APIs for authentication, patient operations, doctor management, appointments, users, and medical records.
 
-**Prerequisites:** JDK 17, Node.js 20.19 or newer, MySQL 8.
+### Main API Groups
 
-1. Create the database:
+| API Group         | Purpose                           | Access              |
+| ----------------- | --------------------------------- | ------------------- |
+| `/api/auth/**`    | Registration and login            | Public              |
+| `/api/patient/**` | Profile, appointments and records | Patient             |
+| `/api/doctors/**` | Doctor information                | Authenticated users |
+| `/api/admin/**`   | Administration and management     | Admin               |
+
+The application currently provides **21 REST API endpoints** covering the main application workflows.
+
+## Getting Started
+
+### Prerequisites
+
+* JDK 17
+* Node.js 20.19+
+* MySQL 8
+* Maven
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Sumanth-C-2002/healthcare-management.git
+cd healthcare-management
+```
+
+### 2. Create the database
+
 ```sql
-   CREATE DATABASE healthcare_db;
+CREATE DATABASE healthcare_db;
 ```
-2. Copy `backend/src/main/resources/application.properties.example` to `application.properties` and fill in your MySQL password, a JWT secret (32+ characters) and the admin credentials.
-3. Run the backend (tables are created automatically, and the admin account is created on first start):
-```
-   cd backend
-   ./mvnw spring-boot:run
-```
-   On Windows use `.\mvnw.cmd spring-boot:run`.
-4. Run the frontend:
-```
-   cd frontend
-   npm install
-   npm run dev
-```
-5. Open http://localhost:5173 and sign in with the admin account, or register as a patient.
 
-## Design
+### 3. Configure the backend
 
-The UI follows a small custom design system (teal palette, Plus Jakarta Sans, rounded cards, subtle hover states) with loading, empty and error states on every screen, responsive layouts and keyboard accessibility.
+Configure the database connection, JWT secret, and admin credentials in:
 
-## Future improvements
+```text
+backend/src/main/resources/application.properties
+```
 
-- Admin download endpoint for medical record files
-- Pagination and sorting for large tables
-- Email notifications for appointment decisions
-- Unit and integration tests, and Docker setup
-- Database migrations with Flyway
+### 4. Run the backend
+
+From the `backend` directory:
+
+```bash
+mvn spring-boot:run
+```
+
+On Windows:
+
+```cmd
+mvnw.cmd spring-boot:run
+```
+
+### 5. Run the frontend
+
+From the `frontend` directory:
+
+```bash
+npm install
+npm run dev
+```
+
+The frontend will be available at:
+
+```text
+http://localhost:5173
+```
+
+## Deployment
+
+The application is deployed using:
+
+* **Frontend:** Render
+* **Backend:** Render with Docker
+* **Database:** Aiven MySQL
+
+The production frontend communicates with the deployed Spring Boot REST API through HTTPS.
+
+## Project Highlights
+
+* Role-based healthcare management workflow
+* Secure JWT authentication and authorization
+* RESTful backend architecture
+* CRUD operations using Spring Data JPA
+* Centralized exception handling
+* React frontend integrated with Spring Boot APIs
+* Dockerized backend deployment
+* MySQL database integration
+* Responsive and user-friendly interface
+
+## Future Improvements
+
+* Pagination and sorting for large datasets
+* Email notifications for appointment updates
+* Automated unit and integration testing
+* Database migration management using Flyway
+* Additional reporting and analytics features
